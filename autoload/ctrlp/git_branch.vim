@@ -39,7 +39,7 @@ export def Accept(mode: string, str: string)
 
   const branch = get(g:, 'ctrlp_gitbranch_branch', '')
   if empty(branch)
-    finish
+    return
   endif
 
   ctrlp#exit()
