@@ -14,18 +14,22 @@ g:ctrlp_ext_vars = get(g:, 'ctrlp_ext_vars', []) -> add({
   sort: 0,
 })
 
-var IndexId = ctrlp#getvar('g:ctrlp_builtins') + len(g:ctrlp_ext_vars)
+const IndexId = ctrlp#getvar('g:ctrlp_builtins') + len(g:ctrlp_ext_vars)
 export def Id(): number
   return IndexId
 enddef
 
+const choices = [
+  'switch',
+  'rename',
+  'rebase',
+  'createfrom (git switch -c)',
+  'yank (clipboard)',
+  'delete'
+]
+
 export def Init(): list<string>
-  var branches = systemlist(['git', 'branch'])
-  if v:shell_error != 0
-    echoerr 'Git repository not found or git command failed.'
-    return []
-  endif
-  return branches
+  return choices
 enddef
 
 export def Accept(mode: string, str: string)
@@ -33,57 +37,46 @@ export def Accept(mode: string, str: string)
     return
   endif
 
-  ctrlp#exit()
-  var branch = substitute(str, '\s*\*\?\s*\|\s\+', '', 'g')
-
-  var choices = [
-    '1. switch',
-    '2. rename',
-    '3. rebase',
-    '4. createfrom (git switch -c)',
-    '5. yank (clipboard)',
-    '6. delete'
-  ]
-  var choice = inputlist(['Select Action for branch "' .. branch .. '":'] + choices)
-  if choice < 1 || choice > len(choices)
-    echo "\nCanceled."
-    return
+  const branch = get(g:, 'ctrlp_gitbranch_branch', '')
+  if empty(branch)
+    finish
   endif
 
-  echo "\n"
+  ctrlp#exit()
+  const choice = substitute(str, '\s.*', '', '')
 
-  if choice == 1
+  if choice ==# 'switch'
     # switch
     execute '!git switch ' .. shellescape(branch)
 
-  elseif choice == 2
+  elseif choice ==# 'rename'
     # rename
-    var new_name = input('New branch name (renaming ' .. branch .. '): ', branch)
+    const new_name = input('New branch name (renaming ' .. branch .. '): ', branch)
     if !empty(new_name) && new_name != branch
       echo "\n"
       execute '!git branch -m ' .. shellescape(branch) .. ' ' .. shellescape(new_name)
     endif
 
-  elseif choice == 3
+  elseif choice ==# 'rebase'
     # rebase
     execute '!git rebase ' .. shellescape(branch)
 
-  elseif choice == 4
+  elseif choice ==# 'createfrom'
     # createfrom (git switch -c <new> <target>)
-    var new_branch = input('New branch name from ' .. branch .. ': ')
+    const new_branch = input('New branch name from ' .. branch .. ': ')
     if !empty(new_branch)
       echo "\n"
       execute '!git switch -c ' .. shellescape(new_branch) .. ' ' .. shellescape(branch)
     endif
 
-  elseif choice == 5
+  elseif choice ==# 'yank'
     # yank
     setreg('+', branch)
     echo 'Yanked branch: ' .. branch
 
-  elseif choice == 6
+  elseif choice ==# 'delete'
     # delete
-    var confirm = input('Delete branch "' .. branch .. '"? (y/N): ')
+    const confirm = input('Delete branch "' .. branch .. '"? (y/N): ')
     if confirm =~? '^y'
       echo "\n"
       execute '!git branch -d ' .. shellescape(branch)
