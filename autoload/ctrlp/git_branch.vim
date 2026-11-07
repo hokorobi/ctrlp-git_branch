@@ -29,6 +29,10 @@ export def Init(): list<string>
 enddef
 
 export def Accept(mode: string, str: string)
+  if empty(str)
+    return
+  endif
+
   ctrlp#exit()
   var branch = substitute(str, '\s*\*\?\s*\|\s\+', '', 'g')
 
