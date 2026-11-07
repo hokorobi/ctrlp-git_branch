@@ -20,8 +20,7 @@ export def Id(): number
 enddef
 
 export def Init(): list<string>
-  # Get a list of local branches (remove leading *)
-  var branches = systemlist(['git', 'branch', '--format=%(refname:short)'])
+  var branches = systemlist(['git', 'branch'])
   if v:shell_error != 0
     echoerr 'Git repository not found or git command failed.'
     return []
@@ -31,10 +30,7 @@ enddef
 
 export def Accept(mode: string, str: string)
   ctrlp#exit()
-  var branch = trim(str)
-  if empty(branch)
-    return
-  endif
+  var branch = substitute(str, '\s*\*\?\s*\|\s\+', '', 'g')
 
   var choices = [
     '1. switch',
