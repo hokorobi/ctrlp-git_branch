@@ -41,45 +41,46 @@ export def Accept(mode: string, str: string)
   if empty(branch)
     return
   endif
+  unlet g:ctrlp_gitbranch_branch
 
   ctrlp#exit()
   const choice = substitute(str, '\s.*', '', '')
 
   if choice ==# 'switch'
     # switch
-    execute '!git switch ' .. shellescape(branch)
+    execute $'!git switch {shellescape(branch)}'
 
   elseif choice ==# 'rename'
     # rename
-    const new_name = input('New branch name (renaming ' .. branch .. '): ', branch)
+    const new_name = input($'New branch name (renaming {branch}): ', branch)
     if !empty(new_name) && new_name != branch
       echo "\n"
-      execute '!git branch -m ' .. shellescape(branch) .. ' ' .. shellescape(new_name)
+      execute $'!git branch -m {shellescape(branch)} {shellescape(new_name)}'
     endif
 
   elseif choice ==# 'rebase'
     # rebase
-    execute '!git rebase ' .. shellescape(branch)
+    execute $'!git rebase {shellescape(branch)}'
 
   elseif choice ==# 'createfrom'
     # createfrom (git switch -c <new> <target>)
-    const new_branch = input('New branch name from ' .. branch .. ': ')
+    const new_branch = input($'New branch name from {branch}: ')
     if !empty(new_branch)
       echo "\n"
-      execute '!git switch -c ' .. shellescape(new_branch) .. ' ' .. shellescape(branch)
+      execute $'!git switch -c {shellescape(new_branch)} {shellescape(branch)}'
     endif
 
   elseif choice ==# 'yank'
     # yank
     setreg('+', branch)
-    echo 'Yanked branch: ' .. branch
+    echo $'Yanked branch: {branch}'
 
   elseif choice ==# 'delete'
     # delete
-    const confirm = input('Delete branch "' .. branch .. '"? (y/N): ')
+    const confirm = input($'Delete branch "{branch}"? (y/N): ')
     if confirm =~? '^y'
       echo "\n"
-      execute '!git branch -d ' .. shellescape(branch)
+      execute $'!git branch -d {shellescape(branch)}'
     else
       echo "\nCanceled deletion."
     endif

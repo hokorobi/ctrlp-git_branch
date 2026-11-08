@@ -5,6 +5,4 @@ if exists('g:loaded_ctrlp_gitbranch')
 endif
 g:loaded_ctrlp_gitbranch = 1
 
-command! CtrlPGitBranch {
-  ctrlp#init(ctrlp#git_branch#Id())
-}
+command! CtrlPGitBranch ctrlp#init(ctrlp#git_branch#Id())
